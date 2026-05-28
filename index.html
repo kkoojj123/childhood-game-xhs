@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>构成我童年的游戏</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', sans-serif;
+    background: #f5f5f5;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0 48px;
+  }
+
+  /* ===== 可导出区域 ===== */
+  #export-area {
+    width: min(100vw, 420px);
+    background: #fff;
+    border-radius: 0;
+    overflow: visible;
+    box-shadow: none;
+  }
+
+  /* ===== HEADER ===== */
+  .header {
+    background: #FF2442;
+    padding: 20px 20px 16px;
+    text-align: center;
+    position: relative;
+  }
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .brand-name {
+    font-size: 14px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: 1px;
+  }
+  .header-title {
+    font-size: 24px;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: 3px;
+    margin-bottom: 4px;
+  }
+  .header-sub {
+    font-size: 12px;
+    color: rgba(255,255,255,0.75);
+    letter-spacing: 1px;
+  }
+  .header-incentive {
+    display: inline-block;
+    margin-top: 10px;
+    background: rgba(255,255,255,0.22);
+    border: 1px solid rgba(255,255,255,0.5);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 16px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+  }
+
+  /* ===== GRID ===== */
+  .grid-wrap {
+    padding: 0;
+    background: #fff;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3px;
+    border-radius: 0;
+    overflow: hidden;
+  }
+  .cell {
+    position: relative;
+    aspect-ratio: 1;
+    cursor: pointer;
+    overflow: hidden;
+    background: #f0f0f5;
+  }
+  .cell:active { opacity: 0.85; }
+
+  /* 中间格 */
+  .cell.center {
+    background: #FF2442;
+    cursor: default;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 8px;
+  }
+  .center-title {
+    font-size: 13px;
+    font-weight: 900;
+    color: #fff;
+    text-align: center;
+    letter-spacing: 1px;
+    line-height: 1.5;
+  }
+  .center-tag {
+    font-size: 9.5px;
+    color: rgba(255,255,255,0.75);
+    letter-spacing: 0.3px;
+    margin-top: 2px;
+  }
+
+  /* 普通格 */
+  .cell-inner {
+    width: 100%; height: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .cell-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+  }
+  .cell-plus {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: rgba(255,36,66,0.08);
+    border: 1.5px dashed rgba(255,36,66,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    color: rgba(255,36,66,0.4);
+  }
+  .cell-hint {
+    font-size: 9px;
+    color: rgba(0,0,0,0.4);
+    letter-spacing: 0.3px;
+  }
+  .cell-label {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 16px 4px 6px;
+    background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, transparent 100%);
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #fff;
+    text-align: center;
+    line-height: 1.35;
+    letter-spacing: 0.3px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+  }
+  .cell-img {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: none;
+  }
+  .cell.filled .cell-placeholder { display: none; }
+  .cell.filled .cell-img { display: block; }
+  .file-input { display: none; }
+
+  /* ===== FOOTER IN EXPORT ===== */
+  .nickname-display {
+    font-size: 22px;
+    font-weight: 900;
+    color: #111;
+    text-align: center;
+    padding: 12px 16px 14px;
+    letter-spacing: 1px;
+    display: none;
+  }
+
+  /* ===== 操作区（不导出）===== */
+  .action-area {
+    width: min(100vw, 420px);
+    padding: 16px 12px 0;
+  }
+  .nickname-wrap { margin-bottom: 12px; }
+  .nickname-input {
+    width: 100%;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 14px;
+    color: #333;
+    outline: none;
+    font-family: inherit;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  }
+  .nickname-input::placeholder { color: #bbb; }
+  .nickname-input:focus { border-color: #FF2442; }
+
+  .tips {
+    font-size: 12.5px;
+    color: #555;
+    font-weight: 500;
+    text-align: center;
+    line-height: 1.8;
+    margin-bottom: 14px;
+  }
+  .hashtags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+  .hashtag {
+    background: #fff0f2;
+    border: 1px solid #ffc0c8;
+    color: #FF2442;
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    user-select: all;
+  }
+  .save-btn {
+    width: 100%;
+    padding: 15px;
+    background: #FF2442;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    border-radius: 14px;
+    border: none;
+    cursor: pointer;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 16px rgba(255,36,66,0.3);
+    transition: opacity 0.2s;
+  }
+  .save-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .save-btn:active { opacity: 0.88; }
+
+  .toast {
+    position: fixed;
+    bottom: 40px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(30,30,30,0.92);
+    color: #fff;
+    font-size: 13px;
+    padding: 10px 20px;
+    border-radius: 20px;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 999;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ===== 页面顶部（不导出）===== */
+  .page-header {
+    width: min(100vw, 420px);
+    background: #FF2442;
+    border-radius: 16px 16px 0 0;
+    padding: 18px 20px 16px;
+    text-align: center;
+  }
+  .brand-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .xhs-logo {
+    width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .xhs-logo svg { width: 24px; height: 24px; }
+  .brand-name {
+    font-size: 14px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: 1.5px;
+  }
+  .page-title {
+    font-size: 24px;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: 3px;
+    margin-bottom: 10px;
+  }
+  .page-incentive {
+    display: inline-block;
+    background: rgba(255,255,255,0.22);
+    border: 1.5px solid rgba(255,255,255,0.5);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 16px;
+    border-radius: 20px;
+  }
+
+  /* export-area 与页面顶部无间距衔接 */
+  #export-area {
+    border-radius: 0 0 0 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- 页面顶部（不导出）-->
+<div class="page-header">
+  <div class="brand-row">
+    <div class="xhs-logo">
+      <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="20" height="20" rx="4" fill="#FF2442"/>
+        <path d="M5 6.5h4.5M5 10h4.5M5 13.5h4.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="14" cy="10" r="2.5" stroke="white" stroke-width="1.5"/>
+        <path d="M14 7.5V5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="brand-name">游戏IF剧场</div>
+  </div>
+  <div class="page-title">构成我童年的游戏</div>
+  <div class="page-incentive">⚡ 在小红书发布，官方会选取优秀笔记投流</div>
+</div>
+
+<!-- ====== 可导出区域 ====== -->
+<div id="export-area">
+
+  <!-- 九宫格 -->
+  <div class="grid-wrap">
+    <div class="grid" id="grid">
+
+      <!-- 格1：童年最爱 -->
+      <div class="cell" data-index="0" onclick="triggerUpload(0)">
+        <input type="file" class="file-input" accept="image/*" onchange="handleFile(this,0)">
+        <div class="cell-inner">
+          <div class="cell-placeholder"><div class="cell-plus">+</div><div class="cell-hint">点击上传</div></div>
+          <img class="cell-img" src="" alt="">
+          <div class="cell-label">童年最爱的游戏</div>
+        </div>
+      </div>
+
+      <!-- 格2：以为能打一辈子 -->
+      <div class="cell" data-index="1" onclick="triggerUpload(1)">
+        <input type="file" class="file-input" accept="image/*" onchange="handleFile(this,1)">
+        <div class="cell-inner">
+          <div class="cell-placeholder"><div class="cell-plus">+</div><div class="cell-hint">点击上传</div></div>
+          <img class="cell-img" src="" alt="">
+          <div class="cell-label">以为能打一辈子的游戏</div>
+        </div>
+      </div>
+
+      <!-- 格3：冷门游戏 -->
+      <div class="cell" data-index="2" onclick="triggerUpload(2)">
+        <input type="file" class="file-input" accept="image/*" onchange="handleFile(this,2)">
+        <div class="cell-inner">
+          <div class="cell-placeholder"><div class="cell-plus">+</div><div class="cell-hint">点击上传</div></div>
+          <img class="cell-img" src="" alt="">
+          <div class="cell-label">以前没火但我超爱的游戏</div>
+        </div>
+      </div>
+
+      <!-- 格4：我推 -->
+      <div class="cell" data-index="3" onclick="triggerUpload(3)">
+        <input type="file" class="file-input" accept="image/*" onchange="handleFile(this,3)">
+        <div class="cell-inner">
+          <div class="cell-placeholder"><div class="cell-plus">+</div><div class="cell-hint">点击上传</div></div>
+          <img class="cell-img" src="" alt="">
+          <div class="cell-label">童年游戏里的我推</div>
+        </div>
+      </div>
+
+      <!-- 格5：中心格（可上传）-->
+      <div class="cell" data-index="4" onclick="triggerUpload(4)">
+        <input type="file" class="file-input" accept="image/*" onchange="handleFile(this,4)">
+        <div class="cell-inner">
+          <div class="cell-placeholder"><div class="cell-plus">+</div><div class="cell-hint">点击上传</div></div>
+          <img class="cell-img" src="" alt="">
+          <div class="cell-label">小时候充钱最多的游戏</div>
+        </div>
+      </div>
+
+      <!-- 格6：女神 -->
+      <div class="cell" data-index="5" onclick="triggerUpload(5)">
+        <input type="file" class="file-input" accept="image/*" onchange="handleFile(this,5)">
+        <div class="cell-inner">
+          <div class="cell-placeholder"><div class="cell-plus">+</div><div class="cell-hint">点击上传</div></div>
+          <img class="cell-img" src="" alt="">
+          <div class="cell-label">家长不让玩的游戏</div>
+        </div>
+      </div>
+
+      <!-- 格7：第一次通关 -->
+      <div class="cell" data-index="6" onclick="triggerUpload(6)">
+        <input type="file" class="file-input" accept="image/*" onchange="handleFile(this,6)">
+        <div class="cell-inner">
+          <div class="cell-placeholder"><div class="cell-plus">+</div><div class="cell-hint">点击上传</div></div>
+          <img class="cell-img" src="" alt="">
+          <div class="cell-label">第一次通关的游戏</div>
+        </div>
+      </div>
+
+      <!-- 格8：最讨厌的BOSS -->
+      <div class="cell" data-index="7" onclick="triggerUpload(7)">
+        <input type="file" class="file-input" accept="image/*" onchange="handleFile(this,7)">
+        <div class="cell-inner">
+          <div class="cell-placeholder"><div class="cell-plus">+</div><div class="cell-hint">点击上传</div></div>
+          <img class="cell-img" src="" alt="">
+          <div class="cell-label">童年最讨厌的游戏BOSS</div>
+        </div>
+      </div>
+
+      <!-- 格9：现在还在玩 -->
+      <div class="cell" data-index="8" onclick="triggerUpload(8)">
+        <input type="file" class="file-input" accept="image/*" onchange="handleFile(this,8)">
+        <div class="cell-inner">
+          <div class="cell-placeholder"><div class="cell-plus">+</div><div class="cell-hint">点击上传</div></div>
+          <img class="cell-img" src="" alt="">
+          <div class="cell-label">现在还在玩的游戏</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 昵称显示（填写后才显示，位于九宫格下方，大字） -->
+  <div class="nickname-display" id="nicknameDisplay"></div>
+
+
+
+</div>
+<!-- ====== 导出区域结束 ====== -->
+
+
+<!-- ====== 操作区（不导出）====== -->
+<div class="action-area">
+  <div class="nickname-wrap">
+    <input class="nickname-input" id="nickname" type="text"
+      placeholder="输入你的昵称（可选，会显示在图片上）" maxlength="20"
+      oninput="updateNickname()">
+  </div>
+
+  <div class="tips">
+    在小红书发布，带上话题 · 官方会随机选取优秀笔记投流
+  </div>
+
+  <div class="hashtags">
+    <span class="hashtag" onclick="copyTag(this)">#游戏IF剧场</span>
+    <span class="hashtag" onclick="copyTag(this)">#用游戏打开六一</span>
+    <span class="hashtag" onclick="copyTag(this)">#构成我童年的游戏</span>
+  </div>
+
+  <button class="save-btn" id="saveBtn" onclick="saveGrid()">
+    📸 生成并保存图片
+  </button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  function triggerUpload(idx) {
+    const cell = document.querySelector(`.cell[data-index="${idx}"]`);
+    if (cell) cell.querySelector('.file-input').click();
+  }
+
+  function handleFile(input, idx) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const cell = document.querySelector(`.cell[data-index="${idx}"]`);
+      cell.querySelector('.cell-img').src = e.target.result;
+      cell.classList.add('filled');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function updateNickname() {
+    const val = document.getElementById('nickname').value.trim();
+    const el = document.getElementById('nicknameDisplay');
+    if (val) {
+      el.textContent = val + ' 的童年游戏九宫格';
+      el.style.display = 'block';
+    } else {
+      el.style.display = 'none';
+    }
+  }
+
+  function copyTag(el) {
+    const text = el.textContent;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => showToast('已复制：' + text));
+    } else {
+      showToast(text + ' 已复制');
+    }
+  }
+
+  async function saveGrid() {
+    const btn = document.getElementById('saveBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ 生成中...';
+    try {
+      const target = document.getElementById('export-area');
+      const canvas = await html2canvas(target, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+      });
+      const link = document.createElement('a');
+      link.download = '构成我童年的游戏.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      showToast('✅ 图片已保存！');
+    } catch(e) {
+      showToast('⚠️ 生成失败，请手动截图保存');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '📸 生成并保存图片';
+    }
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }
+</script>
+
+</body>
+</html>
