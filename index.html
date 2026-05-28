@@ -462,8 +462,15 @@
   </div>
 
   <button class="save-btn" id="saveBtn" onclick="saveGrid()">
-    📸 生成并保存图片
+    📸 生成图片
   </button>
+</div>
+
+<!-- iOS长按保存区域 -->
+<div id="result-area" style="display:none; width:min(100vw,420px); padding:16px 12px; background:#fff; text-align:center;">
+  <div style="font-size:13px;color:#FF2442;font-weight:700;margin-bottom:10px;">👇 长按图片保存到相册</div>
+  <img id="result-img" src="" alt="" style="width:100%;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,0.12);">
+  <div style="font-size:11px;color:#999;margin-top:8px;">苹果手机：长按图片 → 存储到相册<br>安卓/电脑：已自动下载</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -506,34 +513,48 @@
     }
   }
 
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
   async function saveGrid() {
     const btn = document.getElementById('saveBtn');
     btn.disabled = true;
     btn.textContent = '⏳ 生成中...';
     try {
-      // 只截九宫格（grid元素），1:1 不缩放
       const grid = document.getElementById('grid');
       const rect = grid.getBoundingClientRect();
-      const size = Math.round(rect.width); // 正方形边长
+      const size = Math.round(rect.width);
       const canvas = await html2canvas(grid, {
         backgroundColor: '#ffffff',
-        scale: 1,
+        scale: window.devicePixelRatio || 2,
         width: size,
         height: size,
         useCORS: true,
         allowTaint: true,
         logging: false,
       });
-      const link = document.createElement('a');
-      link.download = '构成我童年的游戏.png';
-      link.href = canvas.toDataURL('image/png', 1.0);
-      link.click();
-      showToast('✅ 图片已保存！');
+      const dataUrl = canvas.toDataURL('image/png', 1.0);
+
+      if (isIOS) {
+        // iOS：显示图片，提示长按保存
+        const resultArea = document.getElementById('result-area');
+        const resultImg = document.getElementById('result-img');
+        resultImg.src = dataUrl;
+        resultArea.style.display = 'block';
+        resultArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        showToast('👆 长按图片保存到相册');
+      } else {
+        // 安卓/桌面：直接下载
+        const link = document.createElement('a');
+        link.download = '构成我童年的游戏.png';
+        link.href = dataUrl;
+        link.click();
+        showToast('✅ 图片已保存！');
+      }
     } catch(e) {
       showToast('⚠️ 生成失败，请手动截图保存');
     } finally {
       btn.disabled = false;
-      btn.textContent = '📸 生成并保存图片';
+      btn.textContent = '📸 生成图片';
     }
   }
 
