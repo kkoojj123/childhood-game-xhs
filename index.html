@@ -178,9 +178,10 @@
     font-weight: 900;
     color: #111;
     text-align: center;
-    padding: 12px 16px 14px;
+    padding: 14px 16px 12px;
     letter-spacing: 1px;
     display: none;
+    background: #fff;
   }
 
   /* ===== 操作区（不导出）===== */
@@ -336,6 +337,9 @@
 <!-- ====== 可导出区域 ====== -->
 <div id="export-area">
 
+  <!-- 昵称显示（九宫格上方）-->
+  <div class="nickname-display" id="nicknameDisplay"></div>
+
   <!-- 九宫格 -->
   <div class="grid-wrap">
     <div class="grid" id="grid">
@@ -433,9 +437,6 @@
     </div>
   </div>
 
-  <!-- 昵称显示（填写后才显示，位于九宫格下方，大字） -->
-  <div class="nickname-display" id="nicknameDisplay"></div>
-
 
 
 </div>
@@ -510,17 +511,22 @@
     btn.disabled = true;
     btn.textContent = '⏳ 生成中...';
     try {
-      const target = document.getElementById('export-area');
-      const canvas = await html2canvas(target, {
+      // 只截九宫格（grid元素），1:1 不缩放
+      const grid = document.getElementById('grid');
+      const rect = grid.getBoundingClientRect();
+      const size = Math.round(rect.width); // 正方形边长
+      const canvas = await html2canvas(grid, {
         backgroundColor: '#ffffff',
-        scale: 2,
+        scale: 1,
+        width: size,
+        height: size,
         useCORS: true,
         allowTaint: true,
         logging: false,
       });
       const link = document.createElement('a');
       link.download = '构成我童年的游戏.png';
-      link.href = canvas.toDataURL('image/png');
+      link.href = canvas.toDataURL('image/png', 1.0);
       link.click();
       showToast('✅ 图片已保存！');
     } catch(e) {
