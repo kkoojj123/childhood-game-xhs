@@ -81,57 +81,35 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 3px;
-    border-radius: 0;
-    overflow: hidden;
+    background: #e8e8e8;
   }
+
+  /* 每个格子 = 图片区 + 文字区 */
   .cell {
-    position: relative;
-    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
     cursor: pointer;
+    background: #fff;
     overflow: hidden;
-    background: #f0f0f5;
   }
   .cell:active { opacity: 0.85; }
 
-  /* 中间格 */
-  .cell.center {
-    background: #FF2442;
-    cursor: default;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
-    padding: 8px;
-  }
-  .center-title {
-    font-size: 13px;
-    font-weight: 900;
-    color: #fff;
-    text-align: center;
-    letter-spacing: 1px;
-    line-height: 1.5;
-  }
-  .center-tag {
-    font-size: 9.5px;
-    color: rgba(255,255,255,0.75);
-    letter-spacing: 0.3px;
-    margin-top: 2px;
-  }
-
-  /* 普通格 */
-  .cell-inner {
-    width: 100%; height: 100%;
+  /* 图片区：正方形裁切 */
+  .cell-img-wrap {
     position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    width: 100%;
+    aspect-ratio: 1;
+    overflow: hidden;
+    background: #f0f0f5;
+    flex-shrink: 0;
   }
   .cell-placeholder {
+    position: absolute;
+    inset: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: 5px;
   }
   .cell-plus {
@@ -148,19 +126,6 @@
     color: rgba(0,0,0,0.4);
     letter-spacing: 0.3px;
   }
-  .cell-label {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    padding: 16px 4px 6px;
-    background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, transparent 100%);
-    font-size: 10.5px;
-    font-weight: 700;
-    color: #fff;
-    text-align: center;
-    line-height: 1.35;
-    letter-spacing: 0.3px;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.6);
-  }
   .cell-img {
     position: absolute;
     inset: 0;
@@ -170,6 +135,20 @@
   }
   .cell.filled .cell-placeholder { display: none; }
   .cell.filled .cell-img { display: block; }
+
+  /* 文字区：图片下方白底 */
+  .cell-label {
+    background: #fff;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #111;
+    text-align: center;
+    padding: 5px 4px 6px;
+    line-height: 1.35;
+    letter-spacing: 0.2px;
+    flex-shrink: 0;
+  }
+
   .file-input { display: none; }
 
   /* ===== FOOTER IN EXPORT ===== */
@@ -347,91 +326,91 @@
       <!-- 格1：童年最爱 -->
       <div class="cell" data-index="0" onclick="triggerUpload(0)">
         <input type="file" class="file-input" accept="image/*" onchange="handleFile(this,0)">
-        <div class="cell-inner">
+        <div class="cell-img-wrap">
           <div class="cell-placeholder"><div class="cell-plus">+</div><div class="cell-hint">点击上传</div></div>
           <img class="cell-img" src="" alt="">
-          <div class="cell-label">童年最爱的游戏</div>
         </div>
+        <div class="cell-label">童年最爱的游戏</div>
       </div>
 
       <!-- 格2：以为能打一辈子 -->
       <div class="cell" data-index="1" onclick="triggerUpload(1)">
         <input type="file" class="file-input" accept="image/*" onchange="handleFile(this,1)">
-        <div class="cell-inner">
+        <div class="cell-img-wrap">
           <div class="cell-placeholder"><div class="cell-plus">+</div><div class="cell-hint">点击上传</div></div>
           <img class="cell-img" src="" alt="">
-          <div class="cell-label">以为能打一辈子的游戏</div>
         </div>
+        <div class="cell-label">以为能打一辈子的游戏</div>
       </div>
 
       <!-- 格3：冷门游戏 -->
       <div class="cell" data-index="2" onclick="triggerUpload(2)">
         <input type="file" class="file-input" accept="image/*" onchange="handleFile(this,2)">
-        <div class="cell-inner">
+        <div class="cell-img-wrap">
           <div class="cell-placeholder"><div class="cell-plus">+</div><div class="cell-hint">点击上传</div></div>
           <img class="cell-img" src="" alt="">
-          <div class="cell-label">以前没火但我超爱的游戏</div>
         </div>
+        <div class="cell-label">以前没火但我超爱的游戏</div>
       </div>
 
       <!-- 格4：我推 -->
       <div class="cell" data-index="3" onclick="triggerUpload(3)">
         <input type="file" class="file-input" accept="image/*" onchange="handleFile(this,3)">
-        <div class="cell-inner">
+        <div class="cell-img-wrap">
           <div class="cell-placeholder"><div class="cell-plus">+</div><div class="cell-hint">点击上传</div></div>
           <img class="cell-img" src="" alt="">
-          <div class="cell-label">童年游戏里的我推</div>
         </div>
+        <div class="cell-label">童年游戏里的我推</div>
       </div>
 
       <!-- 格5：中心格（可上传）-->
       <div class="cell" data-index="4" onclick="triggerUpload(4)">
         <input type="file" class="file-input" accept="image/*" onchange="handleFile(this,4)">
-        <div class="cell-inner">
+        <div class="cell-img-wrap">
           <div class="cell-placeholder"><div class="cell-plus">+</div><div class="cell-hint">点击上传</div></div>
           <img class="cell-img" src="" alt="">
-          <div class="cell-label">小时候充钱最多的游戏</div>
         </div>
+        <div class="cell-label">小时候充钱最多的游戏</div>
       </div>
 
       <!-- 格6：女神 -->
       <div class="cell" data-index="5" onclick="triggerUpload(5)">
         <input type="file" class="file-input" accept="image/*" onchange="handleFile(this,5)">
-        <div class="cell-inner">
+        <div class="cell-img-wrap">
           <div class="cell-placeholder"><div class="cell-plus">+</div><div class="cell-hint">点击上传</div></div>
           <img class="cell-img" src="" alt="">
-          <div class="cell-label">家长不让玩的游戏</div>
         </div>
+        <div class="cell-label">家长不让玩的游戏</div>
       </div>
 
       <!-- 格7：第一次通关 -->
       <div class="cell" data-index="6" onclick="triggerUpload(6)">
         <input type="file" class="file-input" accept="image/*" onchange="handleFile(this,6)">
-        <div class="cell-inner">
+        <div class="cell-img-wrap">
           <div class="cell-placeholder"><div class="cell-plus">+</div><div class="cell-hint">点击上传</div></div>
           <img class="cell-img" src="" alt="">
-          <div class="cell-label">第一次通关的游戏</div>
         </div>
+        <div class="cell-label">第一次通关的游戏</div>
       </div>
 
       <!-- 格8：最讨厌的BOSS -->
       <div class="cell" data-index="7" onclick="triggerUpload(7)">
         <input type="file" class="file-input" accept="image/*" onchange="handleFile(this,7)">
-        <div class="cell-inner">
+        <div class="cell-img-wrap">
           <div class="cell-placeholder"><div class="cell-plus">+</div><div class="cell-hint">点击上传</div></div>
           <img class="cell-img" src="" alt="">
-          <div class="cell-label">童年最讨厌的游戏BOSS</div>
         </div>
+        <div class="cell-label">童年最讨厌的游戏BOSS</div>
       </div>
 
       <!-- 格9：现在还在玩 -->
       <div class="cell" data-index="8" onclick="triggerUpload(8)">
         <input type="file" class="file-input" accept="image/*" onchange="handleFile(this,8)">
-        <div class="cell-inner">
+        <div class="cell-img-wrap">
           <div class="cell-placeholder"><div class="cell-plus">+</div><div class="cell-hint">点击上传</div></div>
           <img class="cell-img" src="" alt="">
-          <div class="cell-label">现在还在玩的游戏</div>
         </div>
+        <div class="cell-label">现在还在玩的游戏</div>
       </div>
 
     </div>
