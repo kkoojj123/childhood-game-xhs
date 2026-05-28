@@ -499,17 +499,16 @@
     btn.disabled = true;
     btn.textContent = '⏳ 生成中...';
     try {
-      const grid = document.getElementById('grid');
-      const rect = grid.getBoundingClientRect();
-      const size = Math.round(rect.width);
-      const canvas = await html2canvas(grid, {
+      // 截整个 export-area，让 html2canvas 自动计算实际高度
+      const target = document.getElementById('export-area');
+      const canvas = await html2canvas(target, {
         backgroundColor: '#ffffff',
-        scale: window.devicePixelRatio || 2,
-        width: size,
-        height: size,
+        scale: 2,
         useCORS: true,
         allowTaint: true,
         logging: false,
+        windowWidth: target.scrollWidth,
+        windowHeight: target.scrollHeight,
       });
       const dataUrl = canvas.toDataURL('image/png', 1.0);
 
