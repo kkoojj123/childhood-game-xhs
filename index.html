@@ -526,11 +526,11 @@
     try {
       const COLS = 3, ROWS = 3;
       const CELL = 400;       // 每格图片正方形边长
-      const LABEL_H = 80;     // 文字区高度（加大）
+      const LABEL_H = 100;    // 文字区高度（加大）
       const GAP = 4;
       const PAD = 24;
-      const FONT = 'bold 24px PingFang SC, Noto Sans CJK SC, Helvetica Neue, Arial, sans-serif';
-      const FONT_LIGHT = '20px PingFang SC, Noto Sans CJK SC, Helvetica Neue, Arial, sans-serif';
+      const FONT = 'bold 32px PingFang SC, Noto Sans CJK SC, Helvetica Neue, Arial, sans-serif';
+      const FONT_LIGHT = '26px PingFang SC, Noto Sans CJK SC, Helvetica Neue, Arial, sans-serif';
 
       const nickname = document.getElementById('nickname').value.trim();
       const NICK_H = 96;   // 始终留昵称区
@@ -631,42 +631,29 @@
           else line2 += ch;
         }
         if (line2) {
-          ctx.fillText(line1, x+CELL/2, ly + LABEL_H/2 - 16);
-          ctx.fillText(line2, x+CELL/2, ly + LABEL_H/2 + 16);
+          ctx.fillText(line1, x+CELL/2, ly + LABEL_H/2 - 20);
+          ctx.fillText(line2, x+CELL/2, ly + LABEL_H/2 + 20);
         } else {
           ctx.fillText(line1, x+CELL/2, ly + LABEL_H/2);
         }
       }
 
-      // ===== 底部 footer =====
+      // ===== 底部 footer（只有二维码居中）=====
       const footerY = NICK_H + ROWS*(CELL+LABEL_H) + (ROWS-1)*GAP;
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, footerY, W, FOOTER_H);
       ctx.strokeStyle = '#eee'; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(PAD, footerY); ctx.lineTo(W-PAD, footerY); ctx.stroke();
 
-      // 二维码（右侧）
-      const qrX = W - PAD - QR_SIZE;
-      const qrY = footerY + (FOOTER_H - QR_SIZE - 28) / 2;
+      // 二维码居中
+      const qrX = (W - QR_SIZE) / 2;
+      const qrY = footerY + 20;
       if (qrImg) ctx.drawImage(qrImg, qrX, qrY, QR_SIZE, QR_SIZE);
-      ctx.fillStyle = '#888';
-      ctx.font = '22px PingFang SC, Arial';
+      // 二维码下方文字
+      ctx.fillStyle = '#444';
+      ctx.font = 'bold 28px PingFang SC, Noto Sans CJK SC, Arial';
       ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-      ctx.fillText('扫码参与活动', qrX + QR_SIZE/2, qrY + QR_SIZE + 8);
-
-      // 左侧文字
-      const txX = PAD + 16;
-      const txCY = footerY + FOOTER_H/2;
-      ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#FF2442';
-      ctx.font = 'bold 36px PingFang SC, Noto Sans CJK SC, Arial';
-      ctx.fillText('🎮 游戏IF剧场', txX, txCY - 36);
-      ctx.fillStyle = '#333';
-      ctx.font = '26px PingFang SC, Noto Sans CJK SC, Arial';
-      ctx.fillText('在小红书发布，带上话题', txX, txCY + 4);
-      ctx.fillStyle = '#FF2442';
-      ctx.font = 'bold 24px PingFang SC, Noto Sans CJK SC, Arial';
-      ctx.fillText('#游戏IF剧场  #童年游戏九宫格', txX, txCY + 40);
+      ctx.fillText('扫码填写你的童年游戏九宫格', W/2, qrY + QR_SIZE + 12);
 
       // ===== 导出 =====
       const dataUrl = canvas.toDataURL('image/png', 1.0);
