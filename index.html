@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>构成我童年的游戏</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
@@ -350,7 +350,7 @@
           <div class="cell-placeholder"><div class="cell-plus">+</div><div class="cell-hint">点击上传</div></div>
           <img class="cell-img" src="" alt="">
         </div>
-        <div class="cell-label">因为玩这个被打过的游戏</div>
+        <div class="cell-label">小时候偷偷玩过通宵的游戏</div>
       </div>
 
       <!-- 格4：我推 -->
@@ -360,7 +360,7 @@
           <div class="cell-placeholder"><div class="cell-plus">+</div><div class="cell-hint">点击上传</div></div>
           <img class="cell-img" src="" alt="">
         </div>
-        <div class="cell-label">小时候最喜欢的游戏角色</div>
+        <div class="cell-label">小时候的游戏角色白月光</div>
       </div>
 
       <!-- 格5：中心格（可上传）-->
@@ -437,7 +437,7 @@
   <div class="hashtags">
     <span class="hashtag" onclick="copyTag(this)">#游戏IF剧场</span>
     <span class="hashtag" onclick="copyTag(this)">#用游戏打开六一</span>
-    <span class="hashtag" onclick="copyTag(this)">#构成我童年的游戏</span>
+    <span class="hashtag" onclick="copyTag(this)">#童年游戏九宫格</span>
   </div>
 
   <button class="save-btn" id="saveBtn" onclick="saveGrid()">
@@ -460,17 +460,7 @@
     if (cell) cell.querySelector('.file-input').click();
   }
 
-  function handleFile(input, idx) {
-    const file = input.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const cell = document.querySelector(`.cell[data-index="${idx}"]`);
-      cell.querySelector('.cell-img').src = e.target.result;
-      cell.classList.add('filled');
-    };
-    reader.readAsDataURL(file);
-  }
+
 
   function updateNickname() {
     const val = document.getElementById('nickname').value.trim();
@@ -494,26 +484,165 @@
 
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
+  // 原始图片数据（保留原图，不经过DOM渲染缩放）
+  const rawImages = new Array(9).fill(null);
+
+  function handleFile(input, idx) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      // 保存原始dataURL
+      rawImages[idx] = e.target.result;
+      const cell = document.querySelector(`.cell[data-index="${idx}"]`);
+      cell.querySelector('.cell-img').src = e.target.result;
+      cell.classList.add('filled');
+    };
+    reader.readAsDataURL(file);
+  }
+
   async function saveGrid() {
     const btn = document.getElementById('saveBtn');
     btn.disabled = true;
     btn.textContent = '⏳ 生成中...';
     try {
-      // 截整个 export-area，让 html2canvas 自动计算实际高度
-      const target = document.getElementById('export-area');
-      const canvas = await html2canvas(target, {
-        backgroundColor: '#ffffff',
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        windowWidth: target.scrollWidth,
-        windowHeight: target.scrollHeight,
+      const COLS = 3;
+      const ROWS = 3;
+      const CELL = 400;       // 每格正方形边长（原图分辨率级别）
+      const LABEL_H = 56;     // 文字区高度
+      const GAP = 4;          // 格间距
+      const PAD = 0;          // 外边距
+      const TOTAL_W = COLS * CELL + (COLS-1) * GAP + PAD*2;
+      const TOTAL_H = ROWS * (CELL + LABEL_H) + (ROWS-1) * GAP + PAD*2;
+
+      // 昵称
+      const nickname = document.getElementById('nickname').value.trim();
+      const NICK_H = nickname ? 56 : 0;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = TOTAL_W;
+      canvas.height = TOTAL_H + NICK_H;
+      const ctx = canvas.getContext('2d');
+
+      // 背景
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // 昵称
+      if (nickname) {
+        ctx.fillStyle = '#111111';
+        ctx.font = 'bold 26px PingFang SC, Helvetica Neue, Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(nickname + ' 的童年游戏九宫格', canvas.width/2, NICK_H/2);
+      }
+
+      // 格子标签文案
+      const labels = [
+        '最想给小时候的自己安利的游戏',
+        '最后悔小时候玩过的游戏',
+        '小时候偷偷玩过通宵的游戏',
+        '小时候的游戏角色白月光',
+        '小时候最讨厌的游戏角色',
+        '家长不让玩的游戏',
+        '小时候老是通不了关的游戏',
+        '小时候充钱最多的游戏',
+        '从小时候玩到长大的游戏',
+      ];
+
+      // 加载所有已上传图片
+      const imgPromises = rawImages.map(src => {
+        if (!src) return Promise.resolve(null);
+        return new Promise(res => {
+          const img = new Image();
+          img.onload = () => res(img);
+          img.onerror = () => res(null);
+          img.src = src;
+        });
       });
+      const imgs = await Promise.all(imgPromises);
+
+      for (let i = 0; i < 9; i++) {
+        const row = Math.floor(i / COLS);
+        const col = i % COLS;
+        const x = PAD + col * (CELL + GAP);
+        const y = NICK_H + PAD + row * (CELL + LABEL_H + GAP);
+
+        // 图片区背景
+        ctx.fillStyle = '#f0f0f5';
+        ctx.fillRect(x, y, CELL, CELL);
+
+        if (imgs[i]) {
+          // 原图正方形裁切（cover逻辑）
+          const img = imgs[i];
+          const iw = img.naturalWidth, ih = img.naturalHeight;
+          let sx, sy, sw, sh;
+          if (iw / ih > 1) { // 横图
+            sh = ih; sw = ih;
+            sx = (iw - sw) / 2; sy = 0;
+          } else { // 竖图
+            sw = iw; sh = iw;
+            sx = 0; sy = (ih - sh) / 2;
+          }
+          ctx.drawImage(img, sx, sy, sw, sh, x, y, CELL, CELL);
+        } else {
+          // 空格：画加号
+          ctx.strokeStyle = 'rgba(255,36,66,0.3)';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(x+CELL/2, y+CELL/2, 20, 0, Math.PI*2);
+          ctx.stroke();
+          ctx.fillStyle = 'rgba(255,36,66,0.3)';
+          ctx.font = '24px Arial';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('+', x+CELL/2, y+CELL/2);
+        }
+
+        // 文字区
+        const ly = y + CELL;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x, ly, CELL, LABEL_H);
+        // 分隔线
+        ctx.strokeStyle = '#eeeeee';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x, ly); ctx.lineTo(x+CELL, ly);
+        ctx.stroke();
+        // 文字
+        ctx.fillStyle = '#222222';
+        ctx.font = 'bold 15px PingFang SC, Helvetica Neue, Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        // 长文字自动换行
+        const label = labels[i];
+        const maxW = CELL - 16;
+        let line1 = '', line2 = '';
+        let testLine = '';
+        for (const ch of label) {
+          testLine += ch;
+          if (ctx.measureText(testLine).width > maxW) {
+            line1 = testLine.slice(0, -1);
+            line2 = testLine.slice(-1);
+          } else {
+            line1 = testLine;
+          }
+        }
+        // 补全 line2
+        if (line2) {
+          // 继续把剩余字符加到 line2
+          const rest = label.slice(line1.length);
+          line2 = rest;
+          ctx.fillText(line1, x+CELL/2, ly + LABEL_H/2 - 10);
+          ctx.fillText(line2, x+CELL/2, ly + LABEL_H/2 + 10);
+        } else {
+          ctx.fillText(line1, x+CELL/2, ly + LABEL_H/2);
+        }
+      }
+
       const dataUrl = canvas.toDataURL('image/png', 1.0);
 
       if (isIOS) {
-        // iOS：显示图片，提示长按保存
         const resultArea = document.getElementById('result-area');
         const resultImg = document.getElementById('result-img');
         resultImg.src = dataUrl;
@@ -521,14 +650,14 @@
         resultArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
         showToast('👆 长按图片保存到相册');
       } else {
-        // 安卓/桌面：直接下载
         const link = document.createElement('a');
-        link.download = '构成我童年的游戏.png';
+        link.download = '童年游戏九宫格.png';
         link.href = dataUrl;
         link.click();
         showToast('✅ 图片已保存！');
       }
     } catch(e) {
+      console.error(e);
       showToast('⚠️ 生成失败，请手动截图保存');
     } finally {
       btn.disabled = false;
